@@ -1,0 +1,73 @@
+.top-nav {
+    background-color: #333; /* Dark background for the navbar */
+    overflow: hidden;
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.top-nav a {
+    float: left;
+    color: #f2f2f2; /* Light text color */
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+}
+
+.top-nav a:hover {
+    background-color: #ddd; /* Lighter background on hover */
+    color: black;
+}
+#modelContainer {
+    width: 70%;
+    margin: 5px auto;
+    transform: translateX(-7%); /* Shift to the left */
+    padding-top: 2%;
+}
+html {
+    background-color: rgb(53, 46, 46);
+}
+#key ol {
+    counter-reset: custom-counter; /* Initializes a counter */
+    padding-left: 0; /* Removes default padding */
+    list-style-type: none; /* Removes default numbering */
+    transform: translateX(-20%);
+    width: 110%;
+    padding-top: 5%;
+}
+
+#key ol li {
+    counter-increment: custom-counter; /* Increment counter for each item */
+    margin-bottom: 10px; /* Spacing between items */
+    background-color: #f4f4f4; /* Light grey background */
+    padding: 10px;
+    border-radius: 5px; /* Rounded corners for each list item */
+}
+
+#key ol li:before {
+    content: counter(custom-counter) ". "; /* Display the counter before the text */
+    font-weight: bold; /* Makes the number bold */
+    color: #333; /* Dark grey color for the text */
+    margin-right: 5px; /* Space between the number and the text */
+}
+/* Add a wrapper style */
+#contentWrapper {
+    display: flex; /* Enables flexbox layout */
+    justify-content: center; /* Centers children horizontally */
+    align-items: start; /* Aligns children to the top */
+}
+
+
+#key {
+    flex: 1; /* Allows flexible width */
+    max-width: 300px; /* Limits the width of the key */
+}
+h1 {
+    font-size: 2.5em;
+    text-align: center;
+    color:aliceblue ;
+}
+
+
