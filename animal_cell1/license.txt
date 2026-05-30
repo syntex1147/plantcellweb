@@ -1,0 +1,11 @@
+Model Information:
+* title:	Animal cell
+* source:	https://sketchfab.com/3d-models/animal-cell-e2fc495016ca4542b4ff424e22e62277
+* author:	AnatoCells (https://sketchfab.com/anatocells)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Animal cell" (https://sketchfab.com/3d-models/animal-cell-e2fc495016ca4542b4ff424e22e62277) by AnatoCells (https://sketchfab.com/anatocells) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
