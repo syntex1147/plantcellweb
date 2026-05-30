@@ -166,6 +166,10 @@ body {
     transition: width 0.22s ease;
 }
 
+#loadingOverlay.is-complete .loading-track span {
+    width: 100% !important;
+}
+
 @keyframes membraneDrift {
     0% {
         transform: rotate(0deg) scale(1);

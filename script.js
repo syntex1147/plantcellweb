@@ -61,13 +61,16 @@ let displayedProgress = 0;
 const loadingManager = new THREE.LoadingManager();
 loadingManager.onStart = () => updateLoadingProgress(4);
 loadingManager.onProgress = (url, loaded, total) => {
-    const progress = total > 0 ? (loaded / total) * 96 : displayedProgress + 8;
+    const progress = total > 0 ? (loaded / total) * 92 : displayedProgress + 8;
     updateLoadingProgress(progress);
     if (loadingStatus) {
         loadingStatus.textContent = url.includes('textures') ? 'Sequencing textures' : 'Culturing specimen';
     }
 };
-loadingManager.onLoad = () => updateLoadingProgress(100);
+loadingManager.onLoad = () => {
+    updateLoadingProgress(94);
+    if (loadingStatus) loadingStatus.textContent = 'Assembling specimen';
+};
 loadingManager.onError = () => setLoadingFailed();
 
 const loader = new GLTFLoader(loadingManager);
@@ -75,11 +78,10 @@ loader.load('plantcell/scene.gltf', (gltf) => {
     const model = gltf.scene;
     tuneModel(model);
     scene.add(model);
-    hideLoadingOverlay();
-    animate();
+    renderFirstFrameThenReveal();
 }, (event) => {
     if (event.total > 0) {
-        updateLoadingProgress((event.loaded / event.total) * 82);
+        updateLoadingProgress((event.loaded / event.total) * 76);
     }
 }, () => {
     setLoadingFailed();
@@ -112,6 +114,21 @@ function hideLoadingOverlay() {
             }, 520);
         }, remainingDisplay);
     }
+}
+
+function renderFirstFrameThenReveal() {
+    updateLoadingProgress(98);
+    if (loadingStatus) loadingStatus.textContent = 'Rendering specimen';
+
+    controls.update();
+    renderer.compile(scene, camera);
+    renderer.render(scene, camera);
+
+    requestAnimationFrame(() => {
+        renderer.render(scene, camera);
+        hideLoadingOverlay();
+        animate();
+    });
 }
 
 function updateLoadingProgress(value) {
