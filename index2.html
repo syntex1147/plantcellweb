@@ -3,29 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cell Web</title>
+    <title>Animal Cell Model | Cell Web</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <nav class="top-nav">
-        <a href="index.html">Plant Cell Model</a>
-        <a href="index2.html">Animal Cell Model</a>
-    </nav>
-<h1>Animal Cell (interactive model)</h1>
-    <div id="contentWrapper">
-        <div id="modelContainer">
-            <iframe src="model1.html" frameborder="0" style="height: 500px; width: 100%;"></iframe>
-        </div>
-        <div id="key">
-            <ol>
-                <li>Cell Membrance</li>
-                <li>Lysosomes</li>
-                <li>Mitochondria</li>
-                <li>Nucleus</li>
-            </ol>
-        </div>
-    </div>    
+    <main class="page-shell">
+        <section id="contentWrapper" aria-label="Animal cell workspace">
+            <div id="modelContainer">
+                <iframe src="model1.html" title="Animal cell 3D model"></iframe>
+            </div>
 
-    <script type="module" src="script.js"></script>
+            <header class="page-header">
+                <p>Cell Web</p>
+                <h1>Animal Cell</h1>
+            </header>
+
+            <nav class="top-nav" aria-label="Cell model navigation">
+                <a href="index.html">Plant Cell</a>
+                <a class="is-active" href="index2.html">Animal Cell</a>
+            </nav>
+
+            <aside id="key" aria-label="Animal cell organelle key">
+                <h2>Organelle Index</h2>
+                <ol>
+                    <li>Cell Membrane</li>
+                    <li>Lysosomes</li>
+                    <li>Mitochondria</li>
+                    <li>Nucleus</li>
+                </ol>
+            </aside>
+
+            <div class="scan-meta" aria-hidden="true">
+                <span>Specimen 02</span>
+                <span>Animal Cell Atlas</span>
+                <span>Interactive GLTF</span>
+            </div>
+        </section>
+    </main>
 </body>
 </html>

@@ -1,48 +1,89 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three/build/three.module.js';
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/loaders/GLTFLoader.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three/examples/jsm/controls/OrbitControls.js';
+import * as THREE from 'three';
+import { GLTFLoader } from 'GLTFLoader';
+import { OrbitControls } from 'OrbitControls';
 
-// Scene setup
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer();
+scene.background = new THREE.Color(0xaeb8be);
+scene.fog = new THREE.Fog(0xaeb8be, 260, 660);
+
+const camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.12;
 document.body.appendChild(renderer.domElement);
 
-// Orbit controls for better camera manipulation
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.rotateSpeed = 0.62;
+controls.zoomSpeed = 0.78;
+controls.minDistance = 90;
+controls.maxDistance = 420;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.35;
+setCameraPose();
+controls.addEventListener('start', () => {
+    controls.autoRotate = false;
+});
 controls.update();
 
-// Lighting setup
-const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
-scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // White, brighter light
-directionalLight.position.set(1, 1, 1);
-scene.add(directionalLight);
+function setCameraPose() {
+    const narrow = window.innerWidth < 760;
+    camera.position.set(
+        narrow ? 168 : 108,
+        narrow ? 108 : 68,
+        narrow ? 470 : 258
+    );
+    controls.target.set(48, -5, 8);
+}
 
-// Load GLTF model and handle setup after load
+scene.add(new THREE.HemisphereLight(0xffffff, 0x5d6870, 2.25));
+
+const keyLight = new THREE.DirectionalLight(0xffffff, 2.6);
+keyLight.position.set(-100, 160, 170);
+scene.add(keyLight);
+
+const rimLight = new THREE.DirectionalLight(0xddeeff, 1.2);
+rimLight.position.set(180, 30, -120);
+scene.add(rimLight);
+
 const loader = new GLTFLoader();
-loader.load('plantcell/scene.gltf', function(gltf) {
-    scene.add(gltf.scene);
-    camera.position.set(70, 50, 170); // Adjust camera as needed
-    
-    addSprites(); // Add sprites after the model is loaded to ensure correct placement
-    
-    animate(); // Start animation loop after everything is loaded
-
-    // Hide the loading overlay
-    document.getElementById('loadingOverlay').style.display = 'none';
-}, undefined, function(error) {
-    console.error('An error happened:', error);
+loader.load('plantcell/scene.gltf', (gltf) => {
+    const model = gltf.scene;
+    tuneModel(model);
+    scene.add(model);
+    hideLoadingOverlay();
+    animate();
+}, undefined, () => {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.textContent = 'Specimen Offline';
 });
 
-// Function to add dots and sprites
-const dotGeometry = new THREE.SphereGeometry(6, 32, 32);
-const dotMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-const dots = [];
+function tuneModel(model) {
+    model.traverse((object) => {
+        if (!object.isMesh) return;
+        const materials = Array.isArray(object.material) ? object.material : [object.material];
+        materials.forEach((material) => {
+            if (!material) return;
+            if ('roughness' in material) material.roughness = Math.max(material.roughness ?? 0.72, 0.72);
+            if ('metalness' in material) material.metalness = Math.min(material.metalness ?? 0.05, 0.08);
+            if ('envMapIntensity' in material) material.envMapIntensity = 0.72;
+            if (material.emissive) material.emissiveIntensity = 0.1;
+            material.needsUpdate = true;
+        });
+    });
+}
 
-function addSprites() {
-    const positions = [
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+const positions = [
     { x: 10, y: 2, z: -25, label: 'Vacuole' },
     { x: 125, y: 2, z: -15, label: 'Golgi Apparatus' },
     { x: 5, y: -22, z: 115, label: 'Smooth ER' },
@@ -53,132 +94,122 @@ function addSprites() {
     { x: 70, y: -20, z: -105, label: 'Cytoplasm' },
     { x: -40, y: -5, z: -125, label: 'Chloroplast' },
     { x: -25, y: -25, z: 130, label: 'Cell Wall' },
-        // More positions can be added here...
-    ];
+];
 
-    positions.forEach((pos, index) => {
-        const dot = new THREE.Mesh(dotGeometry, dotMaterial);
-        dot.position.set(pos.x, pos.y, pos.z);
-        dot.userData.label = pos.label;
-        scene.add(dot);
-        dots.push(dot);
+const dotGeometry = new THREE.SphereGeometry(5.8, 32, 32);
+const dotMaterial = new THREE.MeshBasicMaterial({
+    color: 0xf7fbfb,
+    depthTest: false,
+    depthWrite: false
+});
+const dots = [];
 
-        const textSprite = createTextSprite(String(index + 1));
-        textSprite.position.copy(dot.position); // Position sprite directly on the dot
-        scene.add(textSprite);
-    });
-}
+positions.forEach((position, index) => {
+    const dot = new THREE.Mesh(dotGeometry, dotMaterial);
+    dot.position.set(position.x, position.y, position.z);
+    dot.userData.label = position.label;
+    scene.add(dot);
+    dots.push(dot);
 
-// Function to create text sprite
+    const sprite = createTextSprite(String(index + 1));
+    sprite.position.copy(dot.position);
+    scene.add(sprite);
+});
+
 function createTextSprite(text) {
     const canvas = document.createElement('canvas');
-    const size = 81;
+    const size = 128;
     canvas.width = size;
     canvas.height = size;
+
     const context = canvas.getContext('2d');
-    context.fillStyle = 'rgba(0, 0, 0, 0)'; // Transparent background
-    context.font = 'Bold 110px Arial';
+    context.fillStyle = 'rgba(247, 251, 251, 0.92)';
+    context.beginPath();
+    context.arc(size / 2, size / 2, 48, 0, Math.PI * 2);
+    context.fill();
+    context.strokeStyle = 'rgba(16, 21, 22, 0.28)';
+    context.lineWidth = 5;
+    context.stroke();
+    context.fillStyle = '#101516';
+    context.font = '900 62px Arial';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
-    context.fillStyle = 'black';
-    context.fillText(text, size / 2, size / 2);
+    context.fillText(text, size / 2, size / 2 + 2);
 
-    const texture = new THREE.Texture(canvas);
-    texture.needsUpdate = true;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
 
-    const spriteMaterial = new THREE.SpriteMaterial({
+    const material = new THREE.SpriteMaterial({
         map: texture,
         transparent: true,
         depthTest: false,
         depthWrite: false
     });
-    const sprite = new THREE.Sprite(spriteMaterial);
-    sprite.scale.set(5, 5, 1); // Adjust sprite scale as needed
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set(14, 14, 1);
     return sprite;
 }
 
-// Raycaster for mouse interaction
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
+renderer.domElement.addEventListener('click', onCanvasClick);
 
-window.addEventListener('click', function(event) {
-    // Convert mouse position to normalized device coordinates (-1 to +1) for raycasting.
+function onCanvasClick(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    // Update the picking ray with the camera and mouse position
     raycaster.setFromCamera(mouse, camera);
 
-    // Calculate objects intersecting the picking ray. Only test for intersection against the dots array.
     const intersects = raycaster.intersectObjects(dots);
-
     if (intersects.length > 0) {
-        // Call the function to show labels
         showLabel(intersects[0].object.userData.label, intersects[0].object.position);
     }
-});
+}
 
 function showLabel(text, position) {
-    // Create label container
-    const label = document.createElement('div');
-    label.style.position = 'absolute';
-    label.style.padding = '10px';
-    label.style.color = 'white';
-    label.style.backgroundColor = 'black';
-    label.style.border = '1px solid white';
-    label.style.zIndex = '1000';
-    label.style.display = 'flex';
-    label.style.alignItems = 'center';
+    document.querySelectorAll('.model-label').forEach((label) => label.remove());
 
-    // Create text node
+    const label = document.createElement('div');
+    label.className = 'model-label';
+
     const labelText = document.createElement('span');
     labelText.textContent = text;
     label.appendChild(labelText);
 
-    // Create close button
     const closeButton = document.createElement('button');
-    closeButton.textContent = 'X';
-    closeButton.style.marginLeft = '10px';
-    closeButton.style.border = 'none';
-    closeButton.style.background = 'none';
-    closeButton.style.color = 'white';
-    closeButton.style.cursor = 'pointer';
-    closeButton.style.fontSize = '1em';
-
-    // Add close functionality
-    closeButton.onclick = function() {
-        document.body.removeChild(label);
-    };
+    closeButton.type = 'button';
+    closeButton.setAttribute('aria-label', 'Close label');
+    closeButton.textContent = 'x';
+    closeButton.onclick = () => label.remove();
     label.appendChild(closeButton);
 
-    // Calculate and set position
-    const canvasBounds = renderer.domElement.getBoundingClientRect();
-    const labelPos = toScreenPosition(position, camera);
-    label.style.left = `${canvasBounds.left + labelPos.x}px`;
-    label.style.top = `${canvasBounds.top + labelPos.y}px`;
+    const labelPos = toScreenPosition(position);
+    label.style.left = `${Math.min(window.innerWidth - 18, Math.max(18, labelPos.x))}px`;
+    label.style.top = `${Math.min(window.innerHeight - 18, Math.max(18, labelPos.y))}px`;
 
-    // Append to the document body
     document.body.appendChild(label);
 }
 
-function toScreenPosition(position, camera) {
-    const vector = new THREE.Vector3();
-    vector.copy(position);
+function toScreenPosition(position) {
+    const vector = position.clone();
     vector.project(camera);
-
     return {
         x: (vector.x + 1) / 2 * window.innerWidth,
         y: -(vector.y - 1) / 2 * window.innerHeight
     };
 }
 
-
-// Animation loop
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
     renderer.render(scene, camera);
 }
 
-renderer.setClearColor(0x000000); // Set the background color to black
-renderer.clear();
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    if (controls.autoRotate) {
+        setCameraPose();
+        controls.update();
+    }
+});
