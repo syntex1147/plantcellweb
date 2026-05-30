@@ -4,7 +4,7 @@ import { OrbitControls } from 'OrbitControls';
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xaeb8be);
-scene.fog = new THREE.Fog(0xaeb8be, 260, 660);
+scene.fog = new THREE.Fog(0xaeb8be, 420, 980);
 
 const camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.1, 1000);
 
@@ -21,8 +21,8 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.06;
 controls.rotateSpeed = 0.62;
 controls.zoomSpeed = 0.78;
-controls.minDistance = 90;
-controls.maxDistance = 420;
+controls.minDistance = 150;
+controls.maxDistance = 720;
 controls.autoRotate = true;
 controls.autoRotateSpeed = 0.35;
 setCameraPose();
@@ -34,9 +34,9 @@ controls.update();
 function setCameraPose() {
     const narrow = window.innerWidth < 760;
     camera.position.set(
-        narrow ? 168 : 108,
-        narrow ? 108 : 68,
-        narrow ? 470 : 258
+        narrow ? 210 : 142,
+        narrow ? 135 : 88,
+        narrow ? 575 : 360
     );
     controls.target.set(48, -5, 8);
 }
@@ -51,16 +51,38 @@ const rimLight = new THREE.DirectionalLight(0xddeeff, 1.2);
 rimLight.position.set(180, 30, -120);
 scene.add(rimLight);
 
-const loader = new GLTFLoader();
+const loadingOverlay = document.getElementById('loadingOverlay');
+const loadingBar = document.getElementById('loadingBar');
+const loadingPercent = document.getElementById('loadingPercent');
+const loadingStatus = document.getElementById('loadingStatus');
+const loadingStartedAt = performance.now();
+let displayedProgress = 0;
+
+const loadingManager = new THREE.LoadingManager();
+loadingManager.onStart = () => updateLoadingProgress(4);
+loadingManager.onProgress = (url, loaded, total) => {
+    const progress = total > 0 ? (loaded / total) * 96 : displayedProgress + 8;
+    updateLoadingProgress(progress);
+    if (loadingStatus) {
+        loadingStatus.textContent = url.includes('textures') ? 'Sequencing textures' : 'Culturing specimen';
+    }
+};
+loadingManager.onLoad = () => updateLoadingProgress(100);
+loadingManager.onError = () => setLoadingFailed();
+
+const loader = new GLTFLoader(loadingManager);
 loader.load('plantcell/scene.gltf', (gltf) => {
     const model = gltf.scene;
     tuneModel(model);
     scene.add(model);
     hideLoadingOverlay();
     animate();
-}, undefined, () => {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) overlay.textContent = 'Specimen Offline';
+}, (event) => {
+    if (event.total > 0) {
+        updateLoadingProgress((event.loaded / event.total) * 82);
+    }
+}, () => {
+    setLoadingFailed();
 });
 
 function tuneModel(model) {
@@ -79,8 +101,30 @@ function tuneModel(model) {
 }
 
 function hideLoadingOverlay() {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) overlay.style.display = 'none';
+    updateLoadingProgress(100);
+    if (loadingStatus) loadingStatus.textContent = 'Specimen online';
+    if (loadingOverlay) {
+        const remainingDisplay = Math.max(0, 950 - (performance.now() - loadingStartedAt));
+        window.setTimeout(() => {
+            loadingOverlay.classList.add('is-complete');
+            window.setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+            }, 520);
+        }, remainingDisplay);
+    }
+}
+
+function updateLoadingProgress(value) {
+    displayedProgress = Math.max(displayedProgress, Math.min(100, Math.round(value)));
+    if (loadingBar) loadingBar.style.width = `${displayedProgress}%`;
+    if (loadingPercent) loadingPercent.textContent = `${displayedProgress}%`;
+}
+
+function setLoadingFailed() {
+    if (!loadingOverlay) return;
+    loadingOverlay.classList.add('is-error');
+    if (loadingStatus) loadingStatus.textContent = 'Specimen offline';
+    if (loadingPercent) loadingPercent.textContent = 'ERR';
 }
 
 const positions = [

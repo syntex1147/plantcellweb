@@ -13,6 +13,8 @@ body {
     inset: 0;
     z-index: 10;
     display: flex;
+    flex-direction: column;
+    gap: 22px;
     align-items: center;
     justify-content: center;
     color: #f7fbfb;
@@ -21,8 +23,194 @@ body {
     letter-spacing: 0.18em;
     text-transform: uppercase;
     background:
+        radial-gradient(circle at 50% 42%, rgba(247, 251, 251, 0.3), transparent 18%),
         repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 0 1px, transparent 1px 6px),
         linear-gradient(145deg, #c8d0d4, #87939a);
+    transition: opacity 0.46s ease, visibility 0.46s ease;
+}
+
+#loadingOverlay.is-complete {
+    visibility: hidden;
+    opacity: 0;
+}
+
+#loadingOverlay.is-error .cell-core {
+    background: rgba(240, 104, 63, 0.92);
+}
+
+.bio-loader {
+    position: relative;
+    width: min(34vw, 148px);
+    aspect-ratio: 1;
+    filter: drop-shadow(0 18px 38px rgba(16, 21, 22, 0.24));
+}
+
+.bio-loader::before,
+.bio-loader::after {
+    position: absolute;
+    inset: 14%;
+    border: 1px solid rgba(247, 251, 251, 0.3);
+    border-radius: 42% 58% 48% 52%;
+    content: "";
+}
+
+.bio-loader::before {
+    animation: membraneDrift 5.2s linear infinite;
+}
+
+.bio-loader::after {
+    inset: 22%;
+    opacity: 0.62;
+    animation: membraneDrift 4.6s linear infinite reverse;
+}
+
+.cell-core {
+    position: absolute;
+    inset: 35%;
+    z-index: 2;
+    background: rgba(247, 251, 251, 0.92);
+    border: 1px solid rgba(16, 21, 22, 0.16);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 9px rgba(247, 251, 251, 0.12),
+        0 0 36px rgba(247, 251, 251, 0.68);
+    animation: cellPulse 1.7s ease-in-out infinite;
+}
+
+.cell-orbit {
+    position: absolute;
+    inset: 10%;
+    border: 1px solid rgba(247, 251, 251, 0.54);
+    border-radius: 50%;
+}
+
+.cell-orbit--one {
+    transform: rotateX(64deg) rotateZ(16deg);
+    animation: orbitSpin 2.8s linear infinite;
+}
+
+.cell-orbit--two {
+    inset: 18%;
+    transform: rotateX(74deg) rotateZ(112deg);
+    animation: orbitSpin 3.6s linear infinite reverse;
+}
+
+.cell-node {
+    position: absolute;
+    z-index: 3;
+    width: 10px;
+    height: 10px;
+    background: #f7fbfb;
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(247, 251, 251, 0.78);
+}
+
+.cell-node--one {
+    top: 12%;
+    left: 50%;
+    animation: nodeFloat 2.4s ease-in-out infinite;
+}
+
+.cell-node--two {
+    right: 14%;
+    bottom: 31%;
+    animation: nodeFloat 2.4s ease-in-out 0.32s infinite;
+}
+
+.cell-node--three {
+    bottom: 18%;
+    left: 22%;
+    animation: nodeFloat 2.4s ease-in-out 0.64s infinite;
+}
+
+.loading-readout {
+    display: grid;
+    width: min(68vw, 360px);
+    gap: 10px;
+    text-align: center;
+}
+
+.loading-readout p,
+.loading-readout strong {
+    margin: 0;
+}
+
+.loading-readout p {
+    color: rgba(247, 251, 251, 0.74);
+    font-size: 0.72rem;
+}
+
+.loading-readout strong {
+    color: #101516;
+    font-size: clamp(1.8rem, 7vw, 3rem);
+    line-height: 0.9;
+    text-shadow: 0 1px 24px rgba(247, 251, 251, 0.34);
+}
+
+.loading-track {
+    position: relative;
+    height: 7px;
+    overflow: hidden;
+    background: rgba(16, 21, 22, 0.18);
+    border: 1px solid rgba(247, 251, 251, 0.36);
+}
+
+.loading-track span {
+    display: block;
+    width: 0%;
+    height: 100%;
+    background:
+        linear-gradient(90deg, rgba(247, 251, 251, 0.78), rgba(247, 251, 251, 0.98)),
+        repeating-linear-gradient(90deg, transparent 0 13px, rgba(16, 21, 22, 0.12) 13px 15px);
+    box-shadow: 0 0 24px rgba(247, 251, 251, 0.5);
+    transition: width 0.22s ease;
+}
+
+@keyframes membraneDrift {
+    0% {
+        transform: rotate(0deg) scale(1);
+        border-radius: 42% 58% 48% 52%;
+    }
+
+    50% {
+        transform: rotate(180deg) scale(1.06);
+        border-radius: 56% 44% 58% 42%;
+    }
+
+    100% {
+        transform: rotate(360deg) scale(1);
+        border-radius: 42% 58% 48% 52%;
+    }
+}
+
+@keyframes cellPulse {
+    0%,
+    100% {
+        transform: scale(0.94);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes orbitSpin {
+    to {
+        rotate: 360deg;
+    }
+}
+
+@keyframes nodeFloat {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(0.86);
+        opacity: 0.68;
+    }
+
+    50% {
+        transform: translate3d(4px, -7px, 0) scale(1.18);
+        opacity: 1;
+    }
 }
 
 canvas {

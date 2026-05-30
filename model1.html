@@ -16,7 +16,23 @@
     </script>
 </head>
 <body>
-    <div id="loadingOverlay">Loading Specimen</div>
-    <script type="module" src="scripts.js?v=igloo-2"></script>
+    <div id="loadingOverlay" aria-live="polite" aria-label="Loading 3D specimen">
+        <div class="bio-loader" aria-hidden="true">
+            <div class="cell-core"></div>
+            <div class="cell-orbit cell-orbit--one"></div>
+            <div class="cell-orbit cell-orbit--two"></div>
+            <div class="cell-node cell-node--one"></div>
+            <div class="cell-node cell-node--two"></div>
+            <div class="cell-node cell-node--three"></div>
+        </div>
+        <div class="loading-readout">
+            <p id="loadingStatus">Culturing specimen</p>
+            <strong id="loadingPercent">0%</strong>
+            <div class="loading-track">
+                <span id="loadingBar"></span>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="scripts.js?v=zoom-loader-5"></script>
 </body>
 </html>
